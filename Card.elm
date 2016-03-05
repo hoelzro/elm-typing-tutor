@@ -148,8 +148,7 @@ view state =
 
 update : Event -> State -> State
 update event state =
-  let _ = Debug.log "event:" event
-  in case event of
+  case event of
     Clock t    ->
       let tempState        = { state | seed = Random.initialSeed <| round t }
           (newState, card) = generateRandomCard tempState
