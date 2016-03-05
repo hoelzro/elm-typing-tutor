@@ -146,20 +146,26 @@ view : State -> Element
 view state =
   show state
 
+handleClock : Time -> State -> State
+handleClock t state =
+  let tempState        = { state | seed = Random.initialSeed <| round t }
+      (newState, card) = generateRandomCard tempState
+  in { newState | currentCard = card }
+
+handleKeypress : Char -> State -> State
+handleKeypress c state =
+  let (Card target typed) = state.currentCard
+      newCard = Card target (typed ++ (String.fromChar c))
+  in case cardState newCard of
+      Complete   -> state -- XXX for now
+      Incomplete -> { state | currentCard = newCard }
+      Incorrect  ->  state -- XXX for now
+
 update : Event -> State -> State
 update event state =
   case event of
-    Clock t    ->
-      let tempState        = { state | seed = Random.initialSeed <| round t }
-          (newState, card) = generateRandomCard tempState
-      in { newState | currentCard = card }
-    Keypress c ->
-      let (Card target typed) = state.currentCard
-          newCard = Card target (typed ++ (String.fromChar c))
-      in case cardState newCard of
-          Complete   -> state -- XXX for now
-          Incomplete -> { state | currentCard = newCard }
-          Incorrect  ->  state -- XXX for now
+    Clock t    -> handleClock t state
+    Keypress c -> handleKeypress c state
 
 main : Signal Element
 main =
