@@ -144,7 +144,10 @@ update event state =
       let tempState        = { state | seed = Random.initialSeed <| round t }
           (newState, card) = generateRandomCard tempState
       in { newState | currentCard = card }
-    Keypress c -> state -- XXX for now
+    Keypress c ->
+      let (Card target typed) = state.currentCard
+          newCard = Card target (typed ++ (String.fromChar c))
+      in { state | currentCard = newCard }
 
 main : Signal Element
 main =
