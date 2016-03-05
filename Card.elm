@@ -156,7 +156,10 @@ update event state =
     Keypress c ->
       let (Card target typed) = state.currentCard
           newCard = Card target (typed ++ (String.fromChar c))
-      in { state | currentCard = newCard }
+      in case cardState newCard of
+          Complete   -> state -- XXX for now
+          Incomplete -> { state | currentCard = newCard }
+          Incorrect  ->  state -- XXX for now
 
 main : Signal Element
 main =
