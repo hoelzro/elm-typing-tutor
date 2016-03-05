@@ -82,6 +82,16 @@ type alias State = {
   seed : Random.Seed
 }
 
+type CardState = Complete | Incomplete | Incorrect
+
+cardState : Card -> CardState
+cardState (Card target typed) =
+  if target == typed
+    then Complete
+    else if String.startsWith typed target
+      then Incomplete
+      else Incorrect
+
 makeCard : String -> Card
 makeCard s = Card s ""
 
