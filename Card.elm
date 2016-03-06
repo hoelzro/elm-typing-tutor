@@ -95,6 +95,9 @@ cardState (Card target typed) =
 makeCard : String -> Card
 makeCard s = Card s ""
 
+blankCard : Card -> Card
+blankCard (Card target _ ) = Card target ""
+
 -- XXX unsafeFromJust
 fromJust : Maybe a -> a
 fromJust maybeValue =
@@ -159,7 +162,7 @@ handleKeypress c state =
   in case cardState newCard of
       Complete   -> state -- XXX for now
       Incomplete -> { state | currentCard = newCard }
-      Incorrect  ->  state -- XXX for now
+      Incorrect  -> { state | currentCard = blankCard newCard }
 
 update : Event -> State -> State
 update event state =
