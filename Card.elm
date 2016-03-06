@@ -41,6 +41,9 @@ qwerty2jcuken = defineKeyMap [
   ('A', 'Ф'), ('S', 'Ы'), ('D', 'В'), ('F', 'А'), ('G', 'П'), ('H', 'Р'), ('J', 'О'), ('K', 'Л'), ('L', 'Д'), (':', 'Ж'), ('"', 'Э'),
   ('Z', 'Я'), ('X', 'Ч'), ('C', 'С'), ('V', 'М'), ('B', 'И'), ('N', 'Т'), ('M', 'Ь'), ('<', 'Б'), ('>', 'Ю'), ('?', ',') ]
 
+incorrectLockTime = 1000
+clockSpeed = 100
+
 type Card = Card String String
 
 showCard : Card -> Html
@@ -76,6 +79,7 @@ type Event = Clock Time
   | Keypress Char
 
 type alias State = {
+  lockTime : Maybe Int,
   initialized : Bool,
   currentCard : Card,
   seed : Random.Seed
@@ -156,19 +160,28 @@ setUpNewCard state =
 handleClock : Time -> State -> State
 handleClock t state =
   if state.initialized
-    then state
+    then
+      case state.lockTime of
+        Nothing -> state
+        Just lockTime ->
+          if lockTime - clockSpeed < 0
+            then { state | lockTime = Nothing }
+            else { state | lockTime = Just <| lockTime - clockSpeed }
     else
       let tempState = { state | seed = Random.initialSeed <| round t, initialized = True }
       in setUpNewCard tempState
 
 handleKeypress : Char -> State -> State
 handleKeypress c state =
-  let (Card target typed) = state.currentCard
-      newCard = Card target (typed ++ (String.fromChar c))
-  in case cardState newCard of
-      Complete   -> setUpNewCard state
-      Incomplete -> { state | currentCard = newCard }
-      Incorrect  -> { state | currentCard = blankCard newCard }
+  case state.lockTime of
+    Just _ -> state
+    Nothing ->
+      let (Card target typed) = state.currentCard
+          newCard = Card target (typed ++ (String.fromChar c))
+      in case cardState newCard of
+          Complete   -> setUpNewCard state
+          Incomplete -> { state | currentCard = newCard }
+          Incorrect  -> { state | currentCard = blankCard newCard, lockTime = Just incorrectLockTime }
 
 update : Event -> State -> State
 update event state =
@@ -178,11 +191,11 @@ update event state =
 
 main : Signal Element
 main =
-  let clock = Signal.map Clock <| Time.every 100
+  let clock = Signal.map Clock <| Time.every clockSpeed
       inputChars = Signal.map (Keypress << qwerty2jcuken) Keyboard.presses
       combined = Signal.mergeMany [clock, inputChars]
 
-      initialState = { currentCard = Card "" "", seed = Random.initialSeed 0, initialized = False }
+      initialState = { currentCard = Card "" "", seed = Random.initialSeed 0, initialized = False, lockTime = Nothing }
 
   in Signal.map view <| Signal.foldp update initialState combined
 
