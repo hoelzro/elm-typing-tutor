@@ -139,9 +139,9 @@ generateRandomCard state =
   let (ngram, seed1) = Random.generate (randomNgram ngrams) state.seed
   in ({state | seed = seed1}, makeCard ngram)
 
-view : State -> Element
-view state =
-  show state
+view : State -> Html
+view {currentCard} =
+  showCard currentCard
 
 setUpNewCard : State -> State
 setUpNewCard state =
@@ -180,7 +180,7 @@ update event state =
     Clock t    -> handleClock t state
     Keypress c -> handleKeypress c state
 
-main : Signal Element
+main : Signal Html
 main =
   let clock = Signal.map Clock <| Time.every clockSpeed
       inputChars = Signal.map (Keypress << qwerty2jcuken) Keyboard.presses
