@@ -149,11 +149,15 @@ view : State -> Element
 view state =
   show state
 
+setUpNewCard : State -> State
+setUpNewCard state =
+  let (newState, card) = generateRandomCard state
+  in { newState | currentCard = card }
+
 handleClock : Time -> State -> State
 handleClock t state =
-  let tempState        = { state | seed = Random.initialSeed <| round t }
-      (newState, card) = generateRandomCard tempState
-  in { newState | currentCard = card }
+  let tempState = { state | seed = Random.initialSeed <| round t }
+  in setUpNewCard tempState
 
 handleKeypress : Char -> State -> State
 handleKeypress c state =
