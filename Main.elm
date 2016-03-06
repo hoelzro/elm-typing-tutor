@@ -27,10 +27,28 @@ generateRandomCard state =
   let (ngram, seed1) = Random.generate (randomNgram ngrams) state.seed
   in ({state | seed = seed1}, makeCard ngram)
 
+initializeRNG : Time -> State -> State
+initializeRNG t state =  { state | seed = Random.initialSeed <| round t, initialized = True }
+
+decrementLockTime : Int -> State -> State
+decrementLockTime lockTime state = { state | lockTime = Just <| lockTime - clockSpeed }
+
+clearLock : State -> State
+clearLock state = { state | lockTime = Nothing }
+
+resetCard : State -> State
+resetCard state = { state | currentCard = blankCard state.currentCard }
+
+lockExpired : Int -> Bool
+lockExpired lockTime = lockTime - clockSpeed < 0
+
 setUpNewCard : State -> State
 setUpNewCard state =
   let (newState, card) = generateRandomCard state
   in { newState | currentCard = card }
+
+lockUI : State -> State
+lockUI state = { state | lockTime = Just incorrectLockTime }
 
 handleClock : Time -> State -> State
 handleClock t state =
@@ -40,11 +58,10 @@ handleClock t state =
         Nothing -> state
         Just lockTime ->
           if lockTime - clockSpeed < 0
-            then { state | lockTime = Nothing, currentCard = blankCard state.currentCard }
-            else { state | lockTime = Just <| lockTime - clockSpeed }
+            then clearLock <| resetCard state
+            else decrementLockTime lockTime state
     else
-      let tempState = { state | seed = Random.initialSeed <| round t, initialized = True }
-      in setUpNewCard tempState
+      setUpNewCard <| initializeRNG t state
 
 handleKeypress : Char -> State -> State
 handleKeypress c state =
@@ -55,7 +72,7 @@ handleKeypress c state =
       in case cardState newCard of
           Tutor.Card.Complete   -> setUpNewCard state
           Tutor.Card.Incomplete -> { state | currentCard = newCard }
-          Tutor.Card.Incorrect  -> { state | currentCard = newCard, lockTime = Just incorrectLockTime }
+          Tutor.Card.Incorrect  -> lockUI <| { state | currentCard = newCard }
 
 view : State -> Html
 view {currentCard} =
