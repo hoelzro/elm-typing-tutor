@@ -165,7 +165,7 @@ handleClock t state =
         Nothing -> state
         Just lockTime ->
           if lockTime - clockSpeed < 0
-            then { state | lockTime = Nothing }
+            then { state | lockTime = Nothing, currentCard = blankCard state.currentCard }
             else { state | lockTime = Just <| lockTime - clockSpeed }
     else
       let tempState = { state | seed = Random.initialSeed <| round t, initialized = True }
@@ -181,7 +181,7 @@ handleKeypress c state =
       in case cardState newCard of
           Complete   -> setUpNewCard state
           Incomplete -> { state | currentCard = newCard }
-          Incorrect  -> { state | currentCard = blankCard newCard, lockTime = Just incorrectLockTime }
+          Incorrect  -> { state | currentCard = newCard, lockTime = Just incorrectLockTime }
 
 update : Event -> State -> State
 update event state =
