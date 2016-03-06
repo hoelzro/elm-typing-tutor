@@ -66,15 +66,6 @@ updateCard character (Card target typed) =
   let newTyped = typed ++ (String.fromChar character)
   in Card target newTyped
 
-{-
-handleCard : Signal Char -> Card -> Signal Html
-handleCard keyPresses card =
-  Signal.map showCard <| Signal.foldp updateCard card keyPresses
-
-main : Signal Html
-main = Signal.map showCard <| Signal.foldp updateCard (Card "вать" "") <| Signal.map qwerty2jcuken Keyboard.presses
--}
-
 type Event = Clock Time
   | Keypress Char
 
