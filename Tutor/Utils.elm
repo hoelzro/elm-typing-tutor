@@ -15,15 +15,14 @@ dictToFunction bottom mapping = \key ->
     Just value -> value
     Nothing    -> bottom
 
--- XXX unsafeFromJust
-fromJust : Maybe a -> a
-fromJust maybeValue =
+unsafeFromJust : Maybe a -> a
+unsafeFromJust maybeValue =
   case maybeValue of
     Just value -> value
     Nothing    -> Debug.crash "Got Nothing when Just was expected"
 
 last : List a -> a
-last = fromJust << List.head << List.reverse
+last = unsafeFromJust << List.head << List.reverse
 
 selectValue : List (Float, a) -> Float -> a
 selectValue pairs selector =
