@@ -1,7 +1,7 @@
 import Char
 import Dict
 import Graphics.Element exposing (Element, show)
-import Html exposing (Html, div, hr, text)
+import Html exposing (Html, div, hr, span, text)
 import Html.Attributes exposing (style)
 import Keyboard
 import Random
@@ -46,11 +46,18 @@ clockSpeed = 100
 
 type Card = Card String String
 
+renderTyped : String -> String -> Html
+renderTyped expected got =
+  if String.startsWith got expected
+    then text got
+    else span [] [ (text <| String.dropRight 1 got),
+      span [style [("color", "red")]] [ text <| String.right 1 got ] ]
+
 showCard : Card -> Html
 showCard (Card target typed) =
   let targetDisplay = text target
       ruleDisplay = hr [] []
-      typedDisplay = text typed
+      typedDisplay = renderTyped target typed
       styleAttr =
     style [("width", "400px"),
            ("height", "400px"),
