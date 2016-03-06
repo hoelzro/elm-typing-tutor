@@ -6,9 +6,11 @@ import String
 
 type Card = Card String String
 
+isPrefixOf = flip String.startsWith
+
 renderTyped : String -> String -> Html
 renderTyped expected got =
-  if String.startsWith got expected
+  if expected `isPrefixOf` got
     then text got
     else span [] [ (text <| String.dropRight 1 got),
       span [style [("color", "red")]] [ text <| String.right 1 got ] ]
@@ -39,7 +41,7 @@ cardState : Card -> CardState
 cardState (Card target typed) =
   if target == typed
     then Complete
-    else if String.startsWith typed target
+    else if target `isPrefixOf` typed
       then Incomplete
       else Incorrect
 
