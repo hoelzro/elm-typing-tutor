@@ -9,8 +9,6 @@ import Signal
 import String
 import Time exposing (Time)
 
-import Signal.Extra exposing (foldp')
-
 import RussianNGrams exposing (ngrams)
 
 pairListToDict : List (comparable, v) -> Dict.Dict comparable v
@@ -78,6 +76,7 @@ type Event = Clock Time
   | Keypress Char
 
 type alias State = {
+  initialized : Bool,
   currentCard : Card,
   seed : Random.Seed
 }
@@ -156,8 +155,11 @@ setUpNewCard state =
 
 handleClock : Time -> State -> State
 handleClock t state =
-  let tempState = { state | seed = Random.initialSeed <| round t }
-  in setUpNewCard tempState
+  if state.initialized
+    then state
+    else
+      let tempState = { state | seed = Random.initialSeed <| round t, initialized = True }
+      in setUpNewCard tempState
 
 handleKeypress : Char -> State -> State
 handleKeypress c state =
@@ -176,10 +178,11 @@ update event state =
 
 main : Signal Element
 main =
-  let startingTimestamp = Signal.map (Clock << fst) <| Time.timestamp <| Signal.constant ()
+  let clock = Signal.map Clock <| Time.every 100
       inputChars = Signal.map (Keypress << qwerty2jcuken) Keyboard.presses
-      combined = Signal.mergeMany [startingTimestamp, inputChars]
+      combined = Signal.mergeMany [clock, inputChars]
 
-      initialState = { currentCard = Card "" "", seed = Random.initialSeed 0 }
+      initialState = { currentCard = Card "" "", seed = Random.initialSeed 0, initialized = False }
 
-  in Signal.map view <| foldp' update (\event -> update event initialState) combined
+  in Signal.map view <| Signal.foldp update initialState combined
+
