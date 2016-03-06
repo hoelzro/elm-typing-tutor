@@ -164,7 +164,7 @@ handleKeypress c state =
   let (Card target typed) = state.currentCard
       newCard = Card target (typed ++ (String.fromChar c))
   in case cardState newCard of
-      Complete   -> state -- XXX for now
+      Complete   -> setUpNewCard state
       Incomplete -> { state | currentCard = newCard }
       Incorrect  -> { state | currentCard = blankCard newCard }
 
