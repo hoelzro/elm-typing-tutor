@@ -3,12 +3,6 @@ module Tutor.Utils where
 import Dict
 import Random
 
-pairListToDict : List (comparable, v) -> Dict.Dict comparable v
-pairListToDict list =
-  case list of
-    []              -> Dict.empty
-    ((k, v) :: tail) -> Dict.insert k v <| pairListToDict tail
-
 dictToFunction : v -> Dict.Dict comparable v -> comparable -> v
 dictToFunction bottom mapping = \key ->
   case Dict.get key mapping of

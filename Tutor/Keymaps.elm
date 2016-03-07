@@ -1,15 +1,16 @@
 module Tutor.Keymaps where
 
 import Char
+import Dict
 
-import Tutor.Utils exposing (dictToFunction, pairListToDict)
+import Tutor.Utils exposing (dictToFunction)
 
 defineKeyMap : List (Char, Char) -> Char.KeyCode -> Char
 defineKeyMap mapping =
   let (leftKeys, rightKeys) = List.unzip mapping
       keyCodes              = List.map Char.toCode leftKeys
       codesToRightKeys      = List.map2 (\code right -> (code, right)) keyCodes rightKeys
-  in dictToFunction ' ' <| pairListToDict codesToRightKeys
+  in dictToFunction ' ' <| Dict.fromList codesToRightKeys
 
 -- https://en.wikipedia.org/wiki/QWERTY
 -- https://en.wikipedia.org/wiki/JCUKEN
