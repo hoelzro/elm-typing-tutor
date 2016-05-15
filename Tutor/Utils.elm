@@ -1,4 +1,4 @@
-module Tutor.Utils where
+module Tutor.Utils exposing (..)
 
 import Dict
 import Random

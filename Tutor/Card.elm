@@ -1,4 +1,4 @@
-module Tutor.Card where
+module Tutor.Card exposing (..)
 
 import Html exposing (Html, div, hr, span, text)
 import Html.Attributes exposing (style)

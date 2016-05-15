@@ -1,4 +1,4 @@
-module Tutor.RussianNGrams where
+module Tutor.RussianNGrams exposing (..)
 
 monograms = [ (0.039, "ъ"),
   (0.131, "ё"),

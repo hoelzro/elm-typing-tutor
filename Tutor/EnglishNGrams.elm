@@ -1,4 +1,4 @@
-module Tutor.EnglishNGrams where
+module Tutor.EnglishNGrams exposing (..)
 
 -- Letters from https://en.wikipedia.org/wiki/Letter_frequency#Relative_frequencies_of_letters_in_the_English_language
 -- Bigrams from https://en.wikipedia.org/wiki/Bigram#Bigram_frequency_in_the_English_language
