@@ -14,21 +14,16 @@ clockSpeed = 100
 
 type Event = Clock Time
   | Keypress Char
+  | NewCard String
 
 type alias State = {
   lockTime : Maybe Int,
-  initialized : Bool,
-  currentCard : Card,
-  seed : Random.Seed
+  currentCard : Card
 }
 
-generateRandomCard : State -> (State, Card)
+generateRandomCard : State -> (State, Cmd Event)
 generateRandomCard state =
-  let (ngram, seed1) = Random.generate (randomNgram ngrams) state.seed
-  in ({state | seed = seed1}, makeCard ngram)
-
-initializeRNG : Time -> State -> State
-initializeRNG t state =  { state | seed = Random.initialSeed <| round t, initialized = True }
+  (state, Random.generate NewCard <| randomNgram ngrams)
 
 decrementLockTime : Int -> State -> State
 decrementLockTime lockTime state = { state | lockTime = Just <| lockTime - clockSpeed }
@@ -42,51 +37,47 @@ resetCard state = { state | currentCard = blankCard state.currentCard }
 lockExpired : Int -> Bool
 lockExpired lockTime = lockTime - clockSpeed < 0
 
-setUpNewCard : State -> State
-setUpNewCard state =
-  let (newState, card) = generateRandomCard state
-  in { newState | currentCard = card }
+setUpNewCard : State -> String -> State
+setUpNewCard state ngrams =
+  { state | currentCard = makeCard ngrams }
 
 lockUI : State -> State
 lockUI state = { state | lockTime = Just incorrectLockTime }
 
 handleClock : Time -> State -> State
 handleClock t state =
-  if state.initialized
-    then
-      case state.lockTime of
-        Nothing -> state
-        Just lockTime ->
-          if lockTime - clockSpeed < 0
-            then clearLock <| resetCard state
-            else decrementLockTime lockTime state
-    else
-      setUpNewCard <| initializeRNG t state
+  case state.lockTime of
+    Nothing -> state
+    Just lockTime ->
+      if lockTime - clockSpeed < 0
+        then clearLock <| resetCard state
+        else decrementLockTime lockTime state
 
-handleKeypress : Char -> State -> State
+handleKeypress : Char -> State -> (State, Cmd Event)
 handleKeypress c state =
   case state.lockTime of
-    Just _ -> state
+    Just _ -> (state, Cmd.none)
     Nothing ->
       let newCard = updateCard c state.currentCard
       in case cardState newCard of
-          Tutor.Card.Complete   -> setUpNewCard state
-          Tutor.Card.Incomplete -> { state | currentCard = newCard }
-          Tutor.Card.Incorrect  -> lockUI <| { state | currentCard = newCard }
+          Tutor.Card.Complete   -> generateRandomCard state
+          Tutor.Card.Incomplete -> ({ state | currentCard = newCard }, Cmd.none)
+          Tutor.Card.Incorrect  -> (lockUI <| { state | currentCard = newCard }, Cmd.none)
 
 view : State -> Html Event
 view {currentCard} =
   showCard currentCard
 
-update : Event -> State -> State
+update : Event -> State -> (State, Cmd Event)
 update event state =
   case event of
-    Clock t    -> handleClock t state
+    Clock t    -> (handleClock t state, Cmd.none)
     Keypress c -> handleKeypress c state
+    NewCard ngrams -> (setUpNewCard state ngrams, Cmd.none)
 
 init : (State, Cmd Event)
 init =
-  let initialState = { currentCard = Tutor.Card.Card "" "", seed = Random.initialSeed 0, initialized = False, lockTime = Nothing }
+  let initialState = { currentCard = Tutor.Card.Card "" "", lockTime = Nothing }
   in (initialState, Cmd.none)
 
 subscriptions : State -> Sub Event
