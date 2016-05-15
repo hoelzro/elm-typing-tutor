@@ -8,14 +8,14 @@ type Card = Card String String
 
 isPrefixOf = flip String.startsWith
 
-renderTyped : String -> String -> Html
+renderTyped : String -> String -> Html a
 renderTyped expected got =
   if expected `isPrefixOf` got
     then text got
     else span [] [ (text <| String.dropRight 1 got),
       span [style [("color", "red")]] [ text <| String.right 1 got ] ]
 
-showCard : Card -> Html
+showCard : Card -> Html a
 showCard (Card target typed) =
   let targetDisplay = text target
       ruleDisplay = hr [] []
