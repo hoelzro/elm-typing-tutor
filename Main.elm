@@ -84,6 +84,14 @@ update event state =
     Clock t    -> handleClock t state
     Keypress c -> handleKeypress c state
 
+main : Program Never
+main = App.program {
+    init = init,
+    update = update,
+    subscriptions = subscriptions,
+    view = view
+  }
+
 main : Signal Html
 main =
   let clock = Signal.map Clock <| Time.every clockSpeed
