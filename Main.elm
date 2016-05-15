@@ -1,7 +1,7 @@
 import Html exposing (Html)
+import Html.App as App
 import Keyboard
 import Random
-import Signal
 import Time exposing (Time)
 
 import Tutor.Card exposing (Card, blankCard, cardState, makeCard, showCard, updateCard)
@@ -74,7 +74,7 @@ handleKeypress c state =
           Tutor.Card.Incomplete -> { state | currentCard = newCard }
           Tutor.Card.Incorrect  -> lockUI <| { state | currentCard = newCard }
 
-view : State -> Html
+view : State -> Html Event
 view {currentCard} =
   showCard currentCard
 
@@ -84,6 +84,17 @@ update event state =
     Clock t    -> handleClock t state
     Keypress c -> handleKeypress c state
 
+init : (State, Cmd Event)
+init =
+  let initialState = { currentCard = Tutor.Card.Card "" "", seed = Random.initialSeed 0, initialized = False, lockTime = Nothing }
+  in (initialState, Cmd.none)
+
+subscriptions : State -> Sub Event
+subscriptions _ =
+  let clock = Time.every clockSpeed Clock
+      inputChars = Keyboard.presses (Keypress << qwerty2jcuken)
+  in Sub.batch [ clock, inputChars ]
+
 main : Program Never
 main = App.program {
     init = init,
@@ -91,14 +102,3 @@ main = App.program {
     subscriptions = subscriptions,
     view = view
   }
-
-main : Signal Html
-main =
-  let clock = Signal.map Clock <| Time.every clockSpeed
-      inputChars = Signal.map (Keypress << qwerty2jcuken) Keyboard.presses
-      combined = Signal.mergeMany [clock, inputChars]
-
-      initialState = { currentCard = Tutor.Card.Card "" "", seed = Random.initialSeed 0, initialized = False, lockTime = Nothing }
-
-  in Signal.map view <| Signal.foldp update initialState combined
-
