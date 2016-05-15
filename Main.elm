@@ -12,7 +12,7 @@ import Tutor.RussianNGrams exposing (ngrams)
 incorrectLockTime = 1000
 clockSpeed = 100
 
-type Event = Clock Time
+type Message = Clock Time
   | Keypress Char
   | NewCard String
 
@@ -21,7 +21,7 @@ type alias Model = {
   currentCard : Card
 }
 
-generateRandomCard : Model -> (Model, Cmd Event)
+generateRandomCard : Model -> (Model, Cmd Message)
 generateRandomCard model =
   (model, Random.generate NewCard <| randomNgram ngrams)
 
@@ -53,7 +53,7 @@ handleClock t model =
         then clearLock <| resetCard model
         else decrementLockTime lockTime model
 
-handleKeypress : Char -> Model -> (Model, Cmd Event)
+handleKeypress : Char -> Model -> (Model, Cmd Message)
 handleKeypress c model =
   case model.lockTime of
     Just _ -> (model, Cmd.none)
@@ -64,23 +64,23 @@ handleKeypress c model =
           Tutor.Card.Incomplete -> ({ model | currentCard = newCard }, Cmd.none)
           Tutor.Card.Incorrect  -> (lockUI <| { model | currentCard = newCard }, Cmd.none)
 
-view : Model -> Html Event
+view : Model -> Html Message
 view {currentCard} =
   showCard currentCard
 
-update : Event -> Model -> (Model, Cmd Event)
-update event model =
-  case event of
+update : Message -> Model -> (Model, Cmd Message)
+update message model =
+  case message of
     Clock t    -> (handleClock t model, Cmd.none)
     Keypress c -> handleKeypress c model
     NewCard ngrams -> (setUpNewCard model ngrams, Cmd.none)
 
-init : (Model, Cmd Event)
+init : (Model, Cmd Message)
 init =
   let initialState = { currentCard = Tutor.Card.Card "" "", lockTime = Nothing }
   in generateRandomCard initialState
 
-subscriptions : Model -> Sub Event
+subscriptions : Model -> Sub Message
 subscriptions _ =
   let clock = Time.every clockSpeed Clock
       inputChars = Keyboard.presses (Keypress << qwerty2jcuken)
