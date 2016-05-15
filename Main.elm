@@ -78,7 +78,7 @@ update event state =
 init : (State, Cmd Event)
 init =
   let initialState = { currentCard = Tutor.Card.Card "" "", lockTime = Nothing }
-  in (initialState, Cmd.none)
+  in generateRandomCard initialState
 
 subscriptions : State -> Sub Event
 subscriptions _ =
