@@ -21,6 +21,9 @@ type alias Model = {
   currentCard : Card
 }
 
+noCmd : a -> (a, Cmd b)
+noCmd arg = (arg, Cmd.none)
+
 generateRandomCard : Model -> (Model, Cmd Message)
 generateRandomCard model =
   (model, Random.generate NewCard <| randomNgram ngrams)
@@ -56,13 +59,13 @@ handleClock t model =
 handleKeypress : Char -> Model -> (Model, Cmd Message)
 handleKeypress c model =
   case model.lockTime of
-    Just _ -> (model, Cmd.none)
+    Just _ -> noCmd model
     Nothing ->
       let newCard = updateCard c model.currentCard
       in case cardState newCard of
           Tutor.Card.Complete   -> generateRandomCard model
-          Tutor.Card.Incomplete -> ({ model | currentCard = newCard }, Cmd.none)
-          Tutor.Card.Incorrect  -> (lockUI <| { model | currentCard = newCard }, Cmd.none)
+          Tutor.Card.Incomplete -> noCmd { model | currentCard = newCard }
+          Tutor.Card.Incorrect  -> noCmd <| lockUI <| { model | currentCard = newCard }
 
 view : Model -> Html Message
 view {currentCard} =
@@ -71,9 +74,9 @@ view {currentCard} =
 update : Message -> Model -> (Model, Cmd Message)
 update message model =
   case message of
-    Clock t    -> (handleClock t model, Cmd.none)
+    Clock t    -> noCmd <| handleClock t model
     Keypress c -> handleKeypress c model
-    NewCard ngrams -> (setUpNewCard model ngrams, Cmd.none)
+    NewCard ngrams -> noCmd <| setUpNewCard model ngrams
 
 init : (Model, Cmd Message)
 init =
