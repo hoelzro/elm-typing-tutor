@@ -10,7 +10,7 @@ isPrefixOf = flip String.startsWith
 
 renderTyped : String -> String -> Html a
 renderTyped expected got =
-  if expected `isPrefixOf` got
+  if isPrefixOf expected got
     then text got
     else span [] [ (text <| String.dropRight 1 got),
       span [style [("color", "red")]] [ text <| String.right 1 got ] ]
@@ -41,7 +41,7 @@ cardState : Card -> CardState
 cardState (Card target typed) =
   if target == typed
     then Complete
-    else if target `isPrefixOf` typed
+    else if isPrefixOf target typed
       then Incomplete
       else Incorrect
 

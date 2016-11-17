@@ -1,5 +1,4 @@
 import Html exposing (Html)
-import Html.App as App
 import Keyboard
 import Random
 import Time exposing (Time)
@@ -89,8 +88,8 @@ subscriptions _ =
       inputChars = Keyboard.presses (Keypress << qwerty2jcuken)
   in Sub.batch [ clock, inputChars ]
 
-main : Program Never
-main = App.program {
+main : Program Never Model Message
+main = Html.program {
     init = init,
     update = update,
     subscriptions = subscriptions,

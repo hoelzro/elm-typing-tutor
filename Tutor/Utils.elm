@@ -21,7 +21,7 @@ last = unsafeFromJust << List.head << List.reverse
 selectValue : List (Float, a) -> Float -> a
 selectValue pairs selector =
   let lowerThanSelector = List.filter (\(p, _) -> p <= selector) pairs
-  in snd <| last lowerThanSelector
+  in Tuple.second <| last lowerThanSelector
 
 weightedChoice : List (Float, a) -> Random.Generator a
 weightedChoice possibilities =
@@ -47,5 +47,5 @@ randomMember values =
 
 randomNgram : List (Int, List (Float, String)) -> Random.Generator String
 randomNgram ngrams =
-  let randomNgramSet = randomMember <| List.map snd ngrams
-  in randomNgramSet `Random.andThen` weightedChoice
+  let randomNgramSet = randomMember <| List.map Tuple.second ngrams
+  in Random.andThen weightedChoice randomNgramSet
